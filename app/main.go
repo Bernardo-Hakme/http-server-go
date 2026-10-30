@@ -43,6 +43,7 @@ func main() {
  * Handle the message exchange between client and server
  */
 func handleClient(conn net.Conn) {
+	// Store 200 OK response
 	res := []byte("HTTP/1.1 200 OK\r\n\r\n")
 
 	// Write response the connection
