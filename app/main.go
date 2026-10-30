@@ -43,17 +43,12 @@ func main() {
  * Handle the message exchange between client and server
  */
 func handleClient(conn net.Conn) {
-	// Ensure we close after program ends
-	defer conn.Close()
+	res := []byte("HTTP/1.1 200 OK\r\n\r\n")
 
-	// Read data
-	buf := make([]byte, 1024) // Create slice of bytes to store message
-	n, err := conn.Read(buf)  // Store message and return size of slice
+	// Write response the connection
+	_, err := conn.Write(res)
 	if err != nil {
-		fmt.Println("Error reading: ", err.Error())
+		fmt.Println("Error writing response: ", err.Error())
 		return
 	}
-
-	// Print out read data
-	fmt.Println("Received data: ", buf[:n])
 }
