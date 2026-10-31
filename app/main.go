@@ -43,11 +43,25 @@ func main() {
  * Handle the message exchange between client and server
  */
 func handleClient(conn net.Conn) {
-	// Store 200 OK response
-	res := []byte("HTTP/1.1 200 OK\r\n\r\n")
+	// Read request
+	buf := make([]byte, 1024)
+	_, err := conn.Read(buf)
+	if err != nil {
+		fmt.Println("Error reading: ", err.Error())
+		return
+	}
+
+	var res []byte
+	if string(buf[5]) != " " {
+		res = []byte("HTTP/1.1 404 Not Found\r\n\r\n")
+	} else {
+		res = []byte("HTTP/1.1 200 OK\r\n\r\n")
+	}
+
+	fmt.Println("*RECEIVED DATA*:\n", string(buf))
 
 	// Write response the connection
-	_, err := conn.Write(res)
+	_, err = conn.Write(res)
 	if err != nil {
 		fmt.Println("Error writing response: ", err.Error())
 		return
