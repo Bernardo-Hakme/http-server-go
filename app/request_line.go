@@ -26,7 +26,7 @@ func New(rl string) (RequestLine, error) {
 	}, nil
 }
 
-func (rl *RequestLine) getParsedTaget() []string {
+func (rl *RequestLine) getParsedTarget() []string {
 	// Parse the target (splitting accordingly)
 	return strings.Split(rl.RequestTarget, "/")
 }

@@ -58,13 +58,30 @@ func HandleClient(conn net.Conn) {
 	// Whole request
 	reqMessage := string(reqBytes[:n])
 
-	// Whole (splitted) request
+	// Whole (split) request
 	reqParts := strings.Split(reqMessage, "\r\n")
 
-	// Handle url
+	// Handle Request line
 	rl, err := New(reqParts[0]) // Only get the request line
 	if err != nil {
 		fmt.Println("Error handling url: ", err.Error())
+		return
+	}
+
+	// User agent
+	// First find where the user agent header is in the slice
+	var uaPosition int
+	for i, part := range reqParts {
+		if strings.Contains(part, "User-Agent") {
+			uaPosition = i
+		}
+	}
+
+	// Handle User agent
+	ua, err := NewUserAgent(reqParts[uaPosition])
+	if err != nil {
+		fmt.Println("Error handling user agent: ", err.Error())
+		return
 	}
 
 	// response variable
@@ -75,7 +92,7 @@ func HandleClient(conn net.Conn) {
 		res = "HTTP/1.1 200 OK\r\n\r\n"
 	} else {
 		// get endpoint parts
-		ep := rl.getParsedTaget()
+		ep := rl.getParsedTarget()
 
 		switch ep[1] {
 		case "index.html":
@@ -86,6 +103,8 @@ func HandleClient(conn net.Conn) {
 				break
 			}
 			res = fmt.Sprintf("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s", len(ep[2]), ep[2])
+		case "user-agent":
+			res = fmt.Sprintf("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s", len(ua.UserAgent), ua.UserAgent)
 		default:
 			res = "HTTP/1.1 404 Not Found\r\n\r\n"
 		}
