@@ -51,7 +51,12 @@ func handleClient(conn net.Conn) {
 		return
 	}
 
+	// response variable (can't define it in if-statement because of block scope)
 	var res []byte
+
+	// if request != "GET / HTTP/1.1... --> 404 Not Found
+	// else --> 200 OK
+
 	if string(buf[5]) != " " {
 		res = []byte("HTTP/1.1 404 Not Found\r\n\r\n")
 	} else {
