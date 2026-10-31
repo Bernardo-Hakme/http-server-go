@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strings"
 )
 
 // Ensures gofmt doesn't remove the "net" and "os" imports above (feel free to remove this!)
@@ -22,7 +23,13 @@ func main() {
 	}
 
 	// Close server when program finishes
-	defer listener.Close()
+	defer func(listener net.Listener) {
+		err := listener.Close()
+		if err != nil {
+			fmt.Println("Failed to close listener")
+			os.Exit(1)
+		}
+	}(listener)
 
 	fmt.Println("Listening on port 4221")
 
@@ -35,38 +42,55 @@ func main() {
 		}
 
 		// Handle client connection
-		handleClient(conn)
+		HandleClient(conn)
 	}
 }
 
-/**
- * Handle the message exchange between client and server
- */
-func handleClient(conn net.Conn) {
+func HandleClient(conn net.Conn) {
 	// Read request
-	buf := make([]byte, 1024)
-	_, err := conn.Read(buf)
+	reqBytes := make([]byte, 1024)
+	n, err := conn.Read(reqBytes)
 	if err != nil {
 		fmt.Println("Error reading: ", err.Error())
 		return
 	}
 
-	// response variable (can't define it in if-statement because of block scope)
-	var res []byte
+	// Whole request
+	reqMessage := string(reqBytes[:n])
 
-	// if request != "GET / HTTP/1.1... --> 404 Not Found
-	// else --> 200 OK
+	// Whole (splitted) request
+	reqParts := strings.Split(reqMessage, "\r\n")
 
-	if string(buf[5]) != " " {
-		res = []byte("HTTP/1.1 404 Not Found\r\n\r\n")
-	} else {
-		res = []byte("HTTP/1.1 200 OK\r\n\r\n")
+	// Handle url
+	rl, err := New(reqParts[0]) // Only get the request line
+	if err != nil {
+		fmt.Println("Error handling url: ", err.Error())
 	}
 
-	fmt.Println("*RECEIVED DATA*:\n", string(buf))
+	// response variable
+	var res string
+
+	// Check if endpoint empty
+	if rl.RequestTarget == "/" {
+		res = "HTTP/1.1 200 OK\r\n\r\n"
+	} else {
+		// get endpoint parts
+		ep := rl.getParsedTaget()
+
+		switch ep[1] {
+		case "index.html":
+			res = "HTTP/1.1 200 OK\r\n\r\n"
+		case "echo":
+			res = fmt.Sprintf("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s\r\n", len(ep[2]), ep[2])
+		default:
+			res = "HTTP/1.1 404 Not Found\r\n\r\n"
+		}
+	}
+
+	fmt.Println("*RECEIVED DATA*:\n", reqMessage)
 
 	// Write response the connection
-	_, err = conn.Write(res)
+	_, err = conn.Write([]byte(res))
 	if err != nil {
 		fmt.Println("Error writing response: ", err.Error())
 		return
