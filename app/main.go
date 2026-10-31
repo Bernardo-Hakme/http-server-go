@@ -81,7 +81,11 @@ func HandleClient(conn net.Conn) {
 		case "index.html":
 			res = "HTTP/1.1 200 OK\r\n\r\n"
 		case "echo":
-			res = fmt.Sprintf("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s\r\n", len(ep[2]), ep[2])
+			if len(ep) < 3 {
+				res = "HTTP/1.1 200 OK\r\n\r\n"
+				break
+			}
+			res = fmt.Sprintf("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s", len(ep[2]), ep[2])
 		default:
 			res = "HTTP/1.1 404 Not Found\r\n\r\n"
 		}
