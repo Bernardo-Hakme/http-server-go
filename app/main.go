@@ -42,7 +42,7 @@ func main() {
 		}
 
 		// Handle client connection
-		HandleClient(conn)
+		go HandleClient(conn)
 	}
 }
 
