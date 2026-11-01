@@ -104,6 +104,19 @@ func HandleClient(conn net.Conn) {
 			res = fmt.Sprintf("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s", len(ep[2]), ep[2])
 		case "user-agent":
 			res = fmt.Sprintf("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s", len(ua.UserAgent), ua.UserAgent)
+		case "files":
+			if len(ep) < 3 /*|| file not found */ {
+				res = "HTTP/1.1 404 Not Found\r\n\r\n"
+				break
+			}
+
+			contents, err := os.ReadFile(os.Args[2] + ep[2])
+			if err != nil {
+				res = "HTTP/1.1 404 Not Found\r\n\r\n"
+				break
+			}
+
+			res = fmt.Sprintf("HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: %d\r\n\r\n%s", len(contents), string(contents))
 		default:
 			res = "HTTP/1.1 404 Not Found\r\n\r\n"
 		}
