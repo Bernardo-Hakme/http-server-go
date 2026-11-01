@@ -81,7 +81,6 @@ func HandleClient(conn net.Conn) {
 	ua, err := NewUserAgent(reqParts[uaPosition])
 	if err != nil {
 		fmt.Println("Error handling user agent: ", err.Error())
-		return
 	}
 
 	// response variable
