@@ -15,7 +15,7 @@ func NewUserAgent(ua string) (UserAgent, error) {
 	parts := strings.Fields(ua)
 	if len(parts) != 2 {
 		fmt.Println(parts)
-		return UserAgent{}, errors.New("UserAgent format is invalid")
+		return UserAgent{}, errors.New("UserAgent format is invalid or doesn't exist")
 	}
 
 	// split user agent
